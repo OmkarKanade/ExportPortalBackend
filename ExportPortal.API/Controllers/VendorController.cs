@@ -17,6 +17,39 @@ namespace ExportPortal.API.Controllers
             this.userManager = userManager;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var vendorsResult = await userManager.GetUsersInRoleAsync("Vendor");
+
+            if (vendorsResult != null)
+            {
+                List<VendorResponseDTO> allVendors = new List<VendorResponseDTO>();
+
+                foreach (var singleVendor in vendorsResult)
+                {
+                    var vendor = new VendorResponseDTO
+                    {
+                        Id = singleVendor.Id,
+                        Name = singleVendor.Name,
+                        OrganizationName = singleVendor.OrganizationName,
+                        PhoneNumber = singleVendor.PhoneNumber,
+                        Email = singleVendor.Email,
+                        State = singleVendor.State,
+                        City = singleVendor.City,
+                        Address = singleVendor.Address,
+                        Zipcode = singleVendor.Zipcode,
+                        VendorCategory = singleVendor.VendorCategory,
+                    };
+
+                    allVendors.Add(vendor);
+                }
+
+                return Ok(allVendors);
+            }
+
+            return BadRequest("Something went wrong");
+        }
 
         // POST: /api/Auth/Register
         [HttpPost]
@@ -63,6 +96,7 @@ namespace ExportPortal.API.Controllers
             {
                 var vendor = new VendorResponseDTO
                 {
+                    Id = vendorResult.Id,
                     Name = vendorResult.Name,
                     OrganizationName = vendorResult.OrganizationName,
                     PhoneNumber = vendorResult.PhoneNumber,

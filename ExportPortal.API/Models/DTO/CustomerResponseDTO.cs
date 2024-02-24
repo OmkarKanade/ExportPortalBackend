@@ -1,10 +1,9 @@
 ﻿
-using ExportPortal.API.Models.Domain;
-
 namespace ExportPortal.API.Models.DTO
 {
     public class CustomerResponseDTO
     {
+        public String Id { get; set; }
         public string Name { get; set; }
         public string OrganizationName { get; set; }
         public string PhoneNumber { get; set; }

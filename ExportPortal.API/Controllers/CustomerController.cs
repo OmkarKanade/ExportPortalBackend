@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ExportPortal.API.Models.DTO;
 using ExportPortal.API.Models.Domain;
+using Microsoft.EntityFrameworkCore;
 
 namespace ExportPortal.API.Controllers
 {
@@ -17,6 +18,38 @@ namespace ExportPortal.API.Controllers
             this.userManager = userManager;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var customersResult = await userManager.GetUsersInRoleAsync("Customer");
+
+            if (customersResult != null)
+            {
+                List<CustomerResponseDTO> allCustomers = new List<CustomerResponseDTO>();
+
+                foreach (var singleCustomer in customersResult)
+                {
+                    var customer = new CustomerResponseDTO
+                    {
+                        Id = singleCustomer.Id,
+                        Name = singleCustomer.Name,
+                        OrganizationName = singleCustomer.OrganizationName,
+                        PhoneNumber = singleCustomer.PhoneNumber,
+                        Email = singleCustomer.Email,
+                        State = singleCustomer.State,
+                        City = singleCustomer.City,
+                        Address = singleCustomer.Address,
+                        Zipcode = singleCustomer.Zipcode,
+                    };
+
+                    allCustomers.Add(customer);
+                }
+
+                return Ok(allCustomers);
+            }
+
+            return BadRequest("Something went wrong");
+        }
 
         // POST: /api/Auth/Register
         [HttpPost]
@@ -62,6 +95,7 @@ namespace ExportPortal.API.Controllers
             {
                 var customer = new CustomerResponseDTO
                 {
+                    Id = customerResult.Id,
                     Name = customerResult.Name,
                     OrganizationName = customerResult.OrganizationName,
                     PhoneNumber = customerResult.PhoneNumber,

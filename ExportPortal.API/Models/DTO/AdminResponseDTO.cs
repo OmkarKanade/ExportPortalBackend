@@ -1,9 +1,7 @@
 ﻿
-using ExportPortal.API.Models.Domain;
-
 namespace ExportPortal.API.Models.DTO
 {
-    public class VendorResponseDTO
+    public class AdminResponseDTO
     {
         public String Id { get; set; }
         public string Name { get; set; }
@@ -14,8 +12,5 @@ namespace ExportPortal.API.Models.DTO
         public string City { get; set; }
         public string Address { get; set; }
         public int Zipcode { get; set; }
-
-        // Navigation properties
-        public VendorCategory VendorCategory { get; set; }
     }
 }

@@ -34,6 +34,5 @@ namespace ExportPortal.API.Models.DTO
         public bool IsForHumanConsumption { get; set; }
         public Guid? CertificationId { get; set; }
 
-
     }
 }
