@@ -70,7 +70,7 @@ namespace ExportPortal.API.Controllers
                 Zipcode = adminDTO.Zipcode,
             };
 
-            var adminResult = await userManager.CreateAsync(adminProfile, "Pass@123");
+            var adminResult = await userManager.CreateAsync(adminProfile, adminDTO.Password);
 
             if (adminResult.Succeeded)
             {
@@ -90,22 +90,22 @@ namespace ExportPortal.API.Controllers
         [Route("{id:Guid}")]
         public async Task<IActionResult> GetById([FromRoute] string id)
         {
-            var customerResult = await userManager.FindByIdAsync(id);
-            if (customerResult != null)
+            var adminResult = await userManager.FindByIdAsync(id);
+            if (adminResult != null)
             {
-                var customer = new CustomerResponseDTO
+                var admin = new AdminResponseDTO
                 {
-                    Id = customerResult.Id,
-                    Name = customerResult.Name,
-                    OrganizationName = customerResult.OrganizationName,
-                    PhoneNumber = customerResult.PhoneNumber,
-                    Email = customerResult.Email,
-                    State = customerResult.State,
-                    City = customerResult.City,
-                    Address = customerResult.Address,
-                    Zipcode = customerResult.Zipcode,
+                    Id = adminResult.Id,
+                    Name = adminResult.Name,
+                    OrganizationName = adminResult.OrganizationName,
+                    PhoneNumber = adminResult.PhoneNumber,
+                    Email = adminResult.Email,
+                    State = adminResult.State,
+                    City = adminResult.City,
+                    Address = adminResult.Address,
+                    Zipcode = adminResult.Zipcode,
                 };
-                return Ok(customer);
+                return Ok(admin);
             }
            
             return BadRequest();

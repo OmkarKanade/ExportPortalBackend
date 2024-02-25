@@ -152,5 +152,60 @@ namespace ExportPortal.API.Controllers
             return BadRequest();
         }
 
+        [HttpGet]
+        [Route("Vendor/{id:Guid}")]
+        public async Task<IActionResult> GetAllProductsAssigned([FromRoute] string id)
+        {
+            List<Product> products = await dbContext.Products.Include("Certification")
+                .Include("VendorCategory").Include(u => u.UserProfile1)
+                .Include(u => u.UserProfile2).Include(u => u.UserProfile3)
+                .Where(x => x.VendorId1 == id || x.VendorId2 == id || x.VendorId3 == id)
+                .ToListAsync();
+
+            if (products != null)
+            {
+                List<ProductResponseDTO> productDTO = new List<ProductResponseDTO>();
+                foreach (var productDomain in products)
+                {
+                    var productResponseDTO = new ProductResponseDTO
+                    {
+                        Id = productDomain.Id,
+                        Name = productDomain.Name,
+                        ScientificName = productDomain.ScientificName,
+                        VendorCategory = productDomain.VendorCategory,
+                        VendorId1 = productDomain.UserProfile1?.Id,
+                        VendorName1 = productDomain.UserProfile1?.Name,
+                        VendorId2 = productDomain.UserProfile2?.Id,
+                        VendorName2 = productDomain.UserProfile2?.Name,
+                        VendorId3 = productDomain.UserProfile3?.Id,
+                        VendorName3 = productDomain.UserProfile3?.Name,
+                        HSNCode = productDomain.HSNCode,
+                        ToPuneFreight = productDomain.ToPuneFreight,
+                        InnerPackageMaterial = productDomain.InnerPackageMaterial,
+                        OuterPackageMaterial = productDomain.OuterPackageMaterial,
+                        ManualPackage = productDomain.ManualPackage,
+                        MachinePackage = productDomain.MachinePackage,
+                        LocalTransport = productDomain.LocalTransport,
+                        Fumigation = productDomain.Fumigation,
+                        TotalRate = productDomain.TotalRate,
+                        GrossWeight = productDomain.GrossWeight,
+                        PouchType = productDomain.PouchType,
+                        BumperisPouches = productDomain.BumperisPouches,
+                        BagOrBox = productDomain.BagOrBox,
+                        BagOrBoxBumpers = productDomain.BagOrBoxBumpers,
+                        Ingredients = productDomain.Ingredients,
+                        ManufacturingProcess = productDomain.ManufacturingProcess,
+                        DairyDeclarationRequired = productDomain.DairyDeclarationRequired,
+                        IsForHumanConsumption = productDomain.IsForHumanConsumption,
+                        Certification = productDomain.Certification,
+                    };
+
+                    productDTO.Add(productResponseDTO);
+                };
+                return Ok(productDTO);
+            }
+            return BadRequest("Something went wrong");
+        }
+
     }
 }

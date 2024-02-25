@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ExportPortal.API.Models.DTO;
 using ExportPortal.API.Models.Domain;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace ExportPortal.API.Controllers
 {
@@ -112,6 +113,53 @@ namespace ExportPortal.API.Controllers
            
             return BadRequest();
         }
+
+        [HttpPut]
+        [Route("{id:Guid}")]
+        public async Task<IActionResult> Update([FromRoute] string id, [FromBody] UserUpdateDTO userUpdateDTO)
+        {
+
+            var updateResult = await userManager.FindByIdAsync(id);
+
+            if (updateResult != null)
+            {
+                if (userUpdateDTO.NewPassword != "")
+                {
+                    var passResult = await userManager.ChangePasswordAsync(updateResult, userUpdateDTO.CurrentPassword, userUpdateDTO.NewPassword);
+                    if (!passResult.Succeeded)
+                    {
+                        return BadRequest(passResult.Errors);
+                    }
+                }
+                updateResult.Name = userUpdateDTO.Name;
+                updateResult.OrganizationName = userUpdateDTO.OrganizationName;
+                updateResult.PhoneNumber = userUpdateDTO.PhoneNumber;
+                updateResult.State = userUpdateDTO.State;
+                updateResult.City = userUpdateDTO.City;
+                updateResult.Address = userUpdateDTO.Address;
+                updateResult.Zipcode = userUpdateDTO.Zipcode;
+
+
+                await userManager.UpdateAsync(updateResult);
+
+                var update = new UserUpdateResponseDTO
+                {
+                    Id = updateResult.Id,
+                    Name = updateResult.Name,
+                    OrganizationName = updateResult.OrganizationName,
+                    PhoneNumber = updateResult.PhoneNumber,
+                    State = updateResult.State,
+                    City = updateResult.City,
+                    Address = updateResult.Address,
+                    Zipcode = updateResult.Zipcode,
+                };
+
+                return Ok(update);
+            }
+
+            return BadRequest("Something went wrong");
+        }
+
 
     }
 }
