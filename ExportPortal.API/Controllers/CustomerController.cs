@@ -124,7 +124,7 @@ namespace ExportPortal.API.Controllers
 
             if (updateResult != null)
             {
-                if (userUpdateDTO.NewPassword != null)
+                if (userUpdateDTO.NewPassword != "")
                 {
                     var passResult = await userManager.ChangePasswordAsync(updateResult, userUpdateDTO.CurrentPassword, userUpdateDTO.NewPassword);
                     if (!passResult.Succeeded)
