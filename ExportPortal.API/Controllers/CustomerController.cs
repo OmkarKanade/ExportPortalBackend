@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using ExportPortal.API.Models.DTO;
 using ExportPortal.API.Models.Domain;
 using Microsoft.EntityFrameworkCore;
+using ExportPortal.API.Mail;
 
 namespace ExportPortal.API.Controllers
 {
@@ -12,10 +13,12 @@ namespace ExportPortal.API.Controllers
     public class CustomerController : ControllerBase
     {
         private readonly UserManager<UserProfile> userManager;
+        private readonly EmailService emailService;
 
-        public CustomerController(UserManager<UserProfile> userManager)
+        public CustomerController(UserManager<UserProfile> userManager, EmailService emailService)
         {
             this.userManager = userManager;
+            this.emailService = emailService;
         }
 
         [HttpGet]
@@ -79,6 +82,7 @@ namespace ExportPortal.API.Controllers
                 var customerRoleResult = await userManager.AddToRolesAsync(customerProfile, roles);
                 if (customerRoleResult.Succeeded)
                 {
+                    SendWelcomeEmail(customerProfile);
                     return Ok("Customer was registered! Please login.");
                 }
             }
@@ -120,7 +124,7 @@ namespace ExportPortal.API.Controllers
 
             if (updateResult != null)
             {
-                if (userUpdateDTO.NewPassword != "")
+                if (userUpdateDTO.NewPassword != null)
                 {
                     var passResult = await userManager.ChangePasswordAsync(updateResult, userUpdateDTO.CurrentPassword, userUpdateDTO.NewPassword);
                     if (!passResult.Succeeded)
@@ -155,6 +159,14 @@ namespace ExportPortal.API.Controllers
             }
 
             return BadRequest("Something went wrong");
+        }
+
+        private void SendWelcomeEmail(UserProfile user)
+        {
+            string subject = $"Welcome to Our Application Customer ID {user.Id}";
+            string body = $"Dear {user.Name},\n\nWelcome to our application! Your username is: {user.UserName} and your password is: Pass@123\n\nBest regards,\nYour Application Team";
+
+            emailService.SendEmail(user.Email, subject, body);
         }
 
     }

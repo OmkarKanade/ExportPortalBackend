@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ExportPortal.API.Models.DTO;
 using ExportPortal.API.Models.Domain;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+using ExportPortal.API.Mail;
 
 namespace ExportPortal.API.Controllers
 {
@@ -12,10 +12,12 @@ namespace ExportPortal.API.Controllers
     public class VendorController : ControllerBase
     {
         private readonly UserManager<UserProfile> userManager;
+        private readonly EmailService emailService;
 
-        public VendorController(UserManager<UserProfile> userManager)
+        public VendorController(UserManager<UserProfile> userManager, EmailService emailService)
         {
             this.userManager = userManager;
+            this.emailService = emailService;
         }
 
         [HttpGet]
@@ -81,6 +83,7 @@ namespace ExportPortal.API.Controllers
                 var vendorRoleResult = await userManager.AddToRolesAsync(vendorProfile, roles);
                 if (vendorRoleResult.Succeeded)
                 {
+                    SendWelcomeEmail(vendorProfile);
                     return Ok("Vendor was registered! Please login.");
                 }
             }
@@ -123,7 +126,7 @@ namespace ExportPortal.API.Controllers
 
             if (updateResult != null)
             {
-                if (userUpdateDTO.NewPassword != "")
+                if (userUpdateDTO.NewPassword != null)
                 {
                     var passResult = await userManager.ChangePasswordAsync(updateResult, userUpdateDTO.CurrentPassword, userUpdateDTO.NewPassword);
                     if (!passResult.Succeeded)
@@ -160,6 +163,13 @@ namespace ExportPortal.API.Controllers
             return BadRequest("Something went wrong");
         }
 
+        private void SendWelcomeEmail(UserProfile user)
+        {
+            string subject = $"Welcome to Our Application Vendor ID {user.Id}";
+            string body = $"Dear {user.Name},\n\nWelcome to our application! Your username is: {user.UserName} and your password is: Pass@123\n\nBest regards,\nYour Application Team";
+
+            emailService.SendEmail(user.Email, subject, body);
+        }
 
     }
 }

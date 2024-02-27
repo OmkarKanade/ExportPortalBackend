@@ -18,7 +18,7 @@ namespace ExportPortal.API.Models.DTO
         public string? VendorId3 { get; set; }
         public string? VendorName3 { get; set; }
 
-        public int HSNCode { get; set; }
+        public string HSNCode { get; set; }
 
         public decimal ToPuneFreight { get; set; }
         public decimal InnerPackageMaterial { get; set; }

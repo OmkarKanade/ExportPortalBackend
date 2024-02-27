@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExportPortal.API.Migrations
 {
     [DbContext(typeof(ExportPortalDbContext))]
-    [Migration("20240223142340_Database Creation")]
-    partial class DatabaseCreation
+    [Migration("20240227070835_Final Database")]
+    partial class FinalDatabase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -68,8 +68,9 @@ namespace ExportPortal.API.Migrations
                     b.Property<int>("GrossWeight")
                         .HasColumnType("int");
 
-                    b.Property<int>("HSNCode")
-                        .HasColumnType("int");
+                    b.Property<string>("HSNCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Ingredients")
                         .IsRequired()

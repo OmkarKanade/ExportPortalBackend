@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ExportPortal.API.Migrations
 {
     /// <inheritdoc />
-    public partial class DatabaseCreation : Migration
+    public partial class FinalDatabase : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -206,7 +206,7 @@ namespace ExportPortal.API.Migrations
                     VendorId1 = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     VendorId2 = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     VendorId3 = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    HSNCode = table.Column<int>(type: "int", nullable: false),
+                    HSNCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ToPuneFreight = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     InnerPackageMaterial = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     OuterPackageMaterial = table.Column<decimal>(type: "decimal(18,2)", nullable: false),

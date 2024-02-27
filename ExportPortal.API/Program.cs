@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
+using ExportPortal.API.Mail;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -77,6 +78,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
     });
 
+
 builder.Services.AddCors(opt =>
 {
     opt.AddDefaultPolicy(builder =>
@@ -86,6 +88,10 @@ builder.Services.AddCors(opt =>
             .AllowAnyMethod();
     });
 });
+
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
+
+builder.Services.AddScoped<EmailService>();
 
 var app = builder.Build();
 
@@ -97,6 +103,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors();
 
 
 app.UseAuthentication();

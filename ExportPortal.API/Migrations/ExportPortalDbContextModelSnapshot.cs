@@ -65,8 +65,9 @@ namespace ExportPortal.API.Migrations
                     b.Property<int>("GrossWeight")
                         .HasColumnType("int");
 
-                    b.Property<int>("HSNCode")
-                        .HasColumnType("int");
+                    b.Property<string>("HSNCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Ingredients")
                         .IsRequired()
