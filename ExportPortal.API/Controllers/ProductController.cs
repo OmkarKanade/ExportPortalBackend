@@ -1,8 +1,6 @@
 ﻿using ExportPortal.API.Data;
 using ExportPortal.API.Models.Domain;
 using ExportPortal.API.Models.DTO;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,9 +11,15 @@ namespace ExportPortal.API.Controllers
     public class ProductController : ControllerBase
     {
         private readonly ExportPortalDbContext dbContext;
-        public ProductController(ExportPortalDbContext dbContext)
+        private readonly IWebHostEnvironment webHostEnvironment;
+        private readonly IHttpContextAccessor httpContextAccessor;
+
+        public ProductController(ExportPortalDbContext dbContext, IWebHostEnvironment webHostEnvironment,
+            IHttpContextAccessor httpContextAccessor)
         {
             this.dbContext = dbContext;
+            this.webHostEnvironment = webHostEnvironment;
+            this.httpContextAccessor = httpContextAccessor;
         }
 
         [HttpGet]
@@ -32,6 +36,7 @@ namespace ExportPortal.API.Controllers
                     {
                         Id = productDomain.Id,
                         Name = productDomain.Name,
+                        ImgPath = productDomain.ImgPath,
                         ScientificName = productDomain.ScientificName,
                         VendorCategory = productDomain.VendorCategory,
                         VendorId1 = productDomain.UserProfile1?.Id,
@@ -70,12 +75,37 @@ namespace ExportPortal.API.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult<Product>> AddProduct(ProductDTO productDto)
+        public async Task<ActionResult<Product>> AddProduct([FromForm] ProductDTO productDto)
         {
+            var allowedExtensions = new string[] { ".jpg", ".jpeg", ".png" };
+
+            if (!allowedExtensions.Contains(Path.GetExtension(productDto.File.FileName)))
+            {
+                return BadRequest("No file or unsupported file type.");
+            }
+
+            if (productDto.File.Length > 10485760)
+            {
+                return BadRequest("File size more than 10MB, please upload a smaller size file");
+            }
+
+            var localFilePath = Path.Combine(webHostEnvironment.ContentRootPath, "Images",
+                $"{productDto.File.FileName}{Path.GetExtension(productDto.File.FileName)}");
+
+            // Upload Image to Local Path
+            using var stream = new FileStream(localFilePath, FileMode.Create);
+            await productDto.File.CopyToAsync(stream);
+
+            // https://localhost:1234/images/image.jpg
+
+            var urlFilePath = $"{httpContextAccessor.HttpContext.Request.Scheme}://{httpContextAccessor.HttpContext.Request.Host}{httpContextAccessor.HttpContext.Request.PathBase}/Images/{productDto.File.FileName}{Path.GetExtension(productDto.File.FileName)}";
+
+
             var productDomain = new Product
             {
                 Name = productDto.Name,
                 ScientificName = productDto.ScientificName,
+                ImgPath = urlFilePath,
                 VendorCategoryId = productDto.VendorCategoryId,
                 VendorId1 = productDto?.VendorId1,
                 VendorId2 = productDto?.VendorId2,
@@ -105,7 +135,6 @@ namespace ExportPortal.API.Controllers
             await dbContext.SaveChangesAsync();
             return Ok(productDto);
         }
-
 
         [HttpGet]
         [Route("{id:Guid}")]
@@ -204,6 +233,41 @@ namespace ExportPortal.API.Controllers
                 };
                 return Ok(productDTO);
             }
+            return BadRequest("Something went wrong");
+        }
+
+        [HttpPut]
+        [Route("{id:Guid}")]
+        public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] ProductUpdateDTO productUpdateDTO)
+        {
+
+            var updateResult = await dbContext.Products.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (updateResult != null)
+            {
+                updateResult.ToPuneFreight = productUpdateDTO.ToPuneFreight;
+                updateResult.InnerPackageMaterial = productUpdateDTO.InnerPackageMaterial;
+                updateResult.OuterPackageMaterial = productUpdateDTO.OuterPackageMaterial;
+                updateResult.ManualPackage = productUpdateDTO.ManualPackage;
+                updateResult.MachinePackage = productUpdateDTO.MachinePackage;
+                updateResult.LocalTransport = productUpdateDTO.LocalTransport;
+                updateResult.Fumigation = productUpdateDTO.Fumigation;
+                updateResult.TotalRate = productUpdateDTO.TotalRate;
+                updateResult.GrossWeight = productUpdateDTO.GrossWeight;
+                updateResult.PouchType = productUpdateDTO.PouchType;
+                updateResult.BumperisPouches = productUpdateDTO.BumperisPouches;
+                updateResult.BagOrBox = productUpdateDTO.BagOrBox;
+                updateResult.BagOrBoxBumpers = productUpdateDTO.BagOrBoxBumpers;
+                updateResult.Ingredients = productUpdateDTO.Ingredients;
+                updateResult.ManufacturingProcess = productUpdateDTO.ManufacturingProcess;
+                updateResult.DairyDeclarationRequired = productUpdateDTO.DairyDeclarationRequired;
+                updateResult.IsForHumanConsumption = productUpdateDTO.IsForHumanConsumption;
+
+                dbContext.SaveChangesAsync();
+
+                return Ok(productUpdateDTO);
+            }
+
             return BadRequest("Something went wrong");
         }
 

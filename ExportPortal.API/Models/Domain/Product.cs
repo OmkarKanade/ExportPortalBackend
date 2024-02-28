@@ -6,6 +6,7 @@ namespace ExportPortal.API.Models.Domain
         public Guid Id { get; set; }
 
         public string Name { get; set; }
+        public string ImgPath { get; set; }
 
         public string ScientificName { get; set; }
 

@@ -6,7 +6,7 @@ namespace ExportPortal.API.Models.DTO
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
-
+        public string ImgPath { get; set; }
         public string ScientificName { get; set; }
 
         public VendorCategory VendorCategory { get; set; }
@@ -38,7 +38,6 @@ namespace ExportPortal.API.Models.DTO
         public bool DairyDeclarationRequired { get; set; }
         public bool IsForHumanConsumption { get; set; }
         public Certification Certification { get; set; }
-
 
     }
 }

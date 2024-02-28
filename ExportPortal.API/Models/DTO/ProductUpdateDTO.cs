@@ -1,21 +1,8 @@
 ﻿
 namespace ExportPortal.API.Models.DTO
 {
-    public class ProductDTO
+    public class ProductUpdateDTO
     {
-        public string Name { get; set; }
-        public IFormFile File { get; set; }
-
-        public string ScientificName { get; set; }
-
-        public Guid VendorCategoryId { get; set; }
-
-        public string? VendorId1 { get; set; }
-        public string? VendorId2 { get; set; }
-        public string? VendorId3 { get; set; }
-
-        public string HSNCode { get; set; }
-
         public decimal ToPuneFreight { get; set; }
         public decimal InnerPackageMaterial { get; set; }
         public decimal OuterPackageMaterial { get; set; }
@@ -33,7 +20,6 @@ namespace ExportPortal.API.Models.DTO
         public string ManufacturingProcess { get; set; }
         public bool DairyDeclarationRequired { get; set; }
         public bool IsForHumanConsumption { get; set; }
-        public Guid? CertificationId { get; set; }
 
     }
 }

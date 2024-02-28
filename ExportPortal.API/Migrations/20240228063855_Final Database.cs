@@ -201,6 +201,7 @@ namespace ExportPortal.API.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ImgPath = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ScientificName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     VendorCategoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     VendorId1 = table.Column<string>(type: "nvarchar(450)", nullable: true),

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExportPortal.API.Migrations
 {
     [DbContext(typeof(ExportPortalDbContext))]
-    [Migration("20240227070835_Final Database")]
+    [Migration("20240228063855_Final Database")]
     partial class FinalDatabase
     {
         /// <inheritdoc />
@@ -69,6 +69,10 @@ namespace ExportPortal.API.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("HSNCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImgPath")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
