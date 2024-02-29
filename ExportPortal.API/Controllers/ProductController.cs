@@ -147,7 +147,9 @@ namespace ExportPortal.API.Controllers
             {
                 var productResponseDto = new ProductResponseDTO
                 {
+                    Id = productDomain.Id,
                     Name = productDomain.Name,
+                    ImgPath = productDomain.ImgPath,
                     ScientificName = productDomain.ScientificName,
                     VendorCategory = productDomain.VendorCategory,
                     VendorId1 = productDomain.UserProfile1?.Id,
