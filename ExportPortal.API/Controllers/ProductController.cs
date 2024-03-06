@@ -36,6 +36,7 @@ namespace ExportPortal.API.Controllers
                     var productResponseDTO = new ProductResponseDTO
                     {
                         Id = productDomain.Id,
+                        ProductId = productDomain.ProductId,
                         Name = productDomain.Name,
                         ImgPath = productDomain.ImgPath,
                         ScientificName = productDomain.ScientificName,
@@ -135,7 +136,7 @@ namespace ExportPortal.API.Controllers
 
             await dbContext.Products.AddAsync(productDomain);
             await dbContext.SaveChangesAsync();
-            return Ok(productDto);
+            return Ok(productDomain);
         }
 
         [HttpGet]
@@ -150,6 +151,7 @@ namespace ExportPortal.API.Controllers
                 var productResponseDto = new ProductResponseDTO
                 {
                     Id = productDomain.Id,
+                    ProductId = productDomain.ProductId,
                     Name = productDomain.Name,
                     ImgPath = productDomain.ImgPath,
                     ScientificName = productDomain.ScientificName,
@@ -203,6 +205,7 @@ namespace ExportPortal.API.Controllers
                     var productResponseDTO = new ProductResponseDTO
                     {
                         Id = productDomain.Id,
+                        ProductId = productDomain.ProductId,
                         Name = productDomain.Name,
                         ScientificName = productDomain.ScientificName,
                         VendorCategory = productDomain.VendorCategory,
@@ -269,7 +272,7 @@ namespace ExportPortal.API.Controllers
 
                 dbContext.SaveChangesAsync();
 
-                return Ok(productUpdateDTO);
+                return Ok(updateResult);
             }
 
             return BadRequest("Something went wrong");

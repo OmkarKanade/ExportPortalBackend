@@ -62,6 +62,12 @@ namespace ExportPortal.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("AutoId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AutoId"));
+
                     b.Property<string>("BagOrBox")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");

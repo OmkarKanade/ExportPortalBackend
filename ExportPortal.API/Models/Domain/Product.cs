@@ -1,9 +1,15 @@
 ﻿
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace ExportPortal.API.Models.Domain
 {
     public class Product
     {
         public Guid Id { get; set; }
+
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int AutoId { get; set; }
+        public string ProductId => $"Prod_{AutoId}";
 
         public string Name { get; set; }
         public string ImgPath { get; set; }

@@ -1,5 +1,4 @@
-﻿
-namespace ExportPortal.API.Models.Domain
+﻿namespace ExportPortal.API.Models.Domain
 {
     public class Certification
     {
