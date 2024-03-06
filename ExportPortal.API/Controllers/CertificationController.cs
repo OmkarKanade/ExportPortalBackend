@@ -1,6 +1,7 @@
 ﻿using ExportPortal.API.Data;
 using ExportPortal.API.Models.Domain;
 using ExportPortal.API.Models.DTO;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +27,7 @@ namespace ExportPortal.API.Controllers
         }
 
         [HttpPost]
+        //[Authorize(Roles = "Admin")]
         public async Task<ActionResult<Certification>> AddCertificate(CertificationDTO certificateDTO)
         {
             var certificateDomain = new Certification

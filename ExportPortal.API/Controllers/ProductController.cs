@@ -1,6 +1,7 @@
 ﻿using ExportPortal.API.Data;
 using ExportPortal.API.Models.Domain;
 using ExportPortal.API.Models.DTO;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -75,6 +76,7 @@ namespace ExportPortal.API.Controllers
 
 
         [HttpPost]
+        //[Authorize(Roles = "Admin")]
         public async Task<ActionResult<Product>> AddProduct([FromForm] ProductDTO productDto)
         {
             var allowedExtensions = new string[] { ".jpg", ".jpeg", ".png" };

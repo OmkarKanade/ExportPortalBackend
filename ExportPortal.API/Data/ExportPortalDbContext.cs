@@ -13,6 +13,7 @@ namespace ExportPortal.API.Data
 
         public DbSet<Product> Products { get; set; }
         public DbSet<Certification> Certifications { get; set; }
+        public DbSet<Currency> Currencies { get; set; }
         public DbSet<VendorCategory> VendorCategories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -49,7 +50,7 @@ namespace ExportPortal.API.Data
             builder.Entity<IdentityRole>().HasData(roles);
 
             builder.Entity<UserProfile>().Navigation(e => e.VendorCategory).AutoInclude();
-            builder.Entity<Product>().HasOne(u=>u.UserProfile1).WithMany().HasForeignKey(u => u.VendorId1);
+            builder.Entity<Product>().HasOne(u => u.UserProfile1).WithMany().HasForeignKey(u => u.VendorId1);
             builder.Entity<Product>().HasOne(u => u.UserProfile2).WithMany().HasForeignKey(u => u.VendorId2);
             builder.Entity<Product>().HasOne(u => u.UserProfile3).WithMany().HasForeignKey(u => u.VendorId3);
 
