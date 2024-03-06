@@ -5,6 +5,7 @@ using ExportPortal.API.Models.DTO;
 using ExportPortal.API.Models.Domain;
 using ExportPortal.API.Mail;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace ExportPortal.API.Controllers
 {
@@ -23,7 +24,7 @@ namespace ExportPortal.API.Controllers
 
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] string? nameVal, [FromQuery] string? orgVal,
-            [FromQuery] string? catVal)
+            [FromQuery] string? catVal, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
         {
             var dbVendorResult = await userManager.GetUsersInRoleAsync("Vendor");
             var vendorsResult = dbVendorResult.AsQueryable();
@@ -42,6 +43,11 @@ namespace ExportPortal.API.Controllers
             {
                 vendorsResult = vendorsResult.Where(x => x.VendorCategory.Name.ToLower().Contains(catVal.ToLower()));
             }
+
+            // Pagination
+            var skipResults = (pageNumber - 1) * pageSize;
+
+            vendorsResult = vendorsResult.Skip(skipResults).Take(pageSize);
 
             if (vendorsResult != null)
             {
