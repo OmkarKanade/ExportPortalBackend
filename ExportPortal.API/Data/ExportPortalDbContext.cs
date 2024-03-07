@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 
 namespace ExportPortal.API.Data
 {
@@ -15,6 +16,8 @@ namespace ExportPortal.API.Data
         public DbSet<Certification> Certifications { get; set; }
         public DbSet<Currency> Currencies { get; set; }
         public DbSet<VendorCategory> VendorCategories { get; set; }
+        public DbSet<Quotation> Quotations { get; set; }
+        public DbSet<QuotationItem> QuotationItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -53,6 +56,11 @@ namespace ExportPortal.API.Data
             builder.Entity<Product>().HasOne(u => u.UserProfile1).WithMany().HasForeignKey(u => u.VendorId1);
             builder.Entity<Product>().HasOne(u => u.UserProfile2).WithMany().HasForeignKey(u => u.VendorId2);
             builder.Entity<Product>().HasOne(u => u.UserProfile3).WithMany().HasForeignKey(u => u.VendorId3);
+            
+            
+            builder.Entity<Quotation>().HasMany(q => q.Items).WithOne(p => p.Quotation).HasForeignKey(p => p.QuotationId);
+            builder.Entity< QuotationItem >().HasOne(q => q.Quotation).WithMany(p => p.Items).HasForeignKey(q => q.QuotationId);
+
 
         }
 

@@ -1,15 +1,11 @@
-﻿
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace ExportPortal.API.Models.Domain
+﻿namespace ExportPortal.API.Models.Domain
 {
     public class Product
     {
         public Guid Id { get; set; }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int AutoId { get; set; }
-        public string ProductId => $"Prod_{AutoId}";
+        public string ProductId { get; private set; }
+        private static int productCounter = 1;
 
         public string Name { get; set; }
         public string ImgPath { get; set; }
@@ -50,8 +46,22 @@ namespace ExportPortal.API.Models.Domain
 
         public Certification Certification { get; set; }
 
-        public  UserProfile UserProfile1 { get; set; }
+        public UserProfile UserProfile1 { get; set; }
         public UserProfile UserProfile2 { get; set; }
         public UserProfile UserProfile3 { get; set; }
+
+
+        public Product()
+        {
+            ProductId = GenerateSequentialId();
+        }
+
+        private string GenerateSequentialId()
+        {
+            string sequentialId = $"Prod_{productCounter}";
+            productCounter++;
+            return sequentialId;
+        }
+
     }
 }
