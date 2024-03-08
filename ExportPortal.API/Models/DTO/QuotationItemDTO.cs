@@ -2,9 +2,11 @@
 {
     public class QuotationItemDTO
     {
-        public Guid QuatationId { get; set; }
+        public Guid Id { get; set; }
 
         public Guid ProductId { get; set; }
+
+        public String ProductName { get; set; }
 
         public int Quantity { get; set; }
 

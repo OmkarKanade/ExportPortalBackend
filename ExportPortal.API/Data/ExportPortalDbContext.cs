@@ -56,8 +56,9 @@ namespace ExportPortal.API.Data
             builder.Entity<Product>().HasOne(u => u.UserProfile1).WithMany().HasForeignKey(u => u.VendorId1);
             builder.Entity<Product>().HasOne(u => u.UserProfile2).WithMany().HasForeignKey(u => u.VendorId2);
             builder.Entity<Product>().HasOne(u => u.UserProfile3).WithMany().HasForeignKey(u => u.VendorId3);
-            
-            
+
+
+            builder.Entity<Quotation>().HasOne(u => u.Customer).WithMany().HasForeignKey(u => u.CustomerId);
             builder.Entity<Quotation>().HasMany(q => q.Items).WithOne(p => p.Quotation).HasForeignKey(p => p.QuotationId);
             builder.Entity< QuotationItem >().HasOne(q => q.Quotation).WithMany(p => p.Items).HasForeignKey(q => q.QuotationId);
 
