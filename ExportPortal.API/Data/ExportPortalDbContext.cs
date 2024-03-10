@@ -60,7 +60,7 @@ namespace ExportPortal.API.Data
 
             builder.Entity<Quotation>().HasOne(u => u.Customer).WithMany().HasForeignKey(u => u.CustomerId);
             builder.Entity<Quotation>().HasMany(q => q.Items).WithOne(p => p.Quotation).HasForeignKey(p => p.QuotationId);
-            builder.Entity< QuotationItem >().HasOne(q => q.Quotation).WithMany(p => p.Items).HasForeignKey(q => q.QuotationId);
+            builder.Entity<QuotationItem>().HasOne(q => q.Quotation).WithMany(p => p.Items).HasForeignKey(q => q.QuotationId);
 
 
         }

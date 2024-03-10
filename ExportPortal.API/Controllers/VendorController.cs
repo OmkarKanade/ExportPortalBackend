@@ -6,6 +6,7 @@ using ExportPortal.API.Models.Domain;
 using ExportPortal.API.Mail;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using ExportPortal.API.Data;
 
 namespace ExportPortal.API.Controllers
 {
@@ -15,11 +16,13 @@ namespace ExportPortal.API.Controllers
     {
         private readonly UserManager<UserProfile> userManager;
         private readonly EmailService emailService;
+        private readonly ExportPortalDbContext dbContext;
 
-        public VendorController(UserManager<UserProfile> userManager, EmailService emailService)
+        public VendorController(UserManager<UserProfile> userManager, EmailService emailService, ExportPortalDbContext dbContext)
         {
             this.userManager = userManager;
             this.emailService = emailService;
+            this.dbContext = dbContext;
         }
 
         [HttpGet]
@@ -53,8 +56,10 @@ namespace ExportPortal.API.Controllers
             {
                 List<VendorResponseDTO> allVendors = new List<VendorResponseDTO>();
 
-                foreach (var singleVendor in vendorsResult)
+                foreach (var item in vendorsResult)
                 {
+                    var singleVendor = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == item.Id);
+
                     var vendor = new VendorResponseDTO
                     {
                         Id = singleVendor.Id,
@@ -67,6 +72,7 @@ namespace ExportPortal.API.Controllers
                         Address = singleVendor.Address,
                         Zipcode = singleVendor.Zipcode,
                         VendorCategory = singleVendor.VendorCategory,
+                        IsVerified = singleVendor.IsVerified
                     };
 
                     allVendors.Add(vendor);
@@ -97,6 +103,7 @@ namespace ExportPortal.API.Controllers
                 Address = vendorDTO.Address,
                 Zipcode = vendorDTO.Zipcode,
                 VendorCategoryId = vendorDTO.VendorCategoryId,
+                IsVerified = true,
             };
 
             var vendorResult = await userManager.CreateAsync(vendorProfile, "Pass@123");
@@ -120,7 +127,8 @@ namespace ExportPortal.API.Controllers
         [Route("{id:Guid}")]
         public async Task<IActionResult> GetById([FromRoute] string id)
         {
-            var vendorResult = await userManager.FindByIdAsync(id);
+            var vendorResult = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
+
             if (vendorResult!= null)
             {
                 var vendor = new VendorResponseDTO
@@ -135,6 +143,7 @@ namespace ExportPortal.API.Controllers
                     Address = vendorResult.Address,
                     Zipcode = vendorResult.Zipcode,
                     VendorCategory = vendorResult.VendorCategory,
+                    IsVerified = vendorResult.IsVerified,
                 };
                 return Ok(vendor);
             }
@@ -147,7 +156,7 @@ namespace ExportPortal.API.Controllers
         public async Task<IActionResult> Update([FromRoute] string id, [FromBody] UserUpdateDTO userUpdateDTO)
         {
 
-            var updateResult = await userManager.FindByIdAsync(id);
+            var updateResult = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
 
             if (updateResult != null)
             {

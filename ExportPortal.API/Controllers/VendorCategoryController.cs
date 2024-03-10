@@ -56,8 +56,9 @@ namespace ExportPortal.API.Controllers
                 return NotFound();
             }
 
-            var vendorCategoryDTO = new VendorCategoryDTO
+            var vendorCategoryDTO = new VendorCategoryResponseDTO
             {
+                Id = vendorCategoryDomain.Id,
                 Name = vendorCategoryDomain.Name,
                 Description = vendorCategoryDomain.Description
             };

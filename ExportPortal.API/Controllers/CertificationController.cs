@@ -52,8 +52,9 @@ namespace ExportPortal.API.Controllers
                 return NotFound();
             }
 
-            var certificateDTO = new CertificationDTO
+            var certificateDTO = new CertificationResponseDTO
             {
+                Id = certificateDomain.Id,
                 Name = certificateDomain.Name
             };
 

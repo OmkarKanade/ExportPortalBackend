@@ -6,6 +6,7 @@ using ExportPortal.API.Models.Domain;
 using Microsoft.EntityFrameworkCore;
 using ExportPortal.API.Mail;
 using Microsoft.AspNetCore.Authorization;
+using ExportPortal.API.Data;
 
 namespace ExportPortal.API.Controllers
 {
@@ -15,15 +16,18 @@ namespace ExportPortal.API.Controllers
     {
         private readonly UserManager<UserProfile> userManager;
         private readonly EmailService emailService;
+        private readonly ExportPortalDbContext dbContext;
 
-        public CustomerController(UserManager<UserProfile> userManager, EmailService emailService)
+        public CustomerController(UserManager<UserProfile> userManager, EmailService emailService, ExportPortalDbContext dbContext)
         {
             this.userManager = userManager;
             this.emailService = emailService;
+            this.dbContext = dbContext;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] string? nameVal, [FromQuery] string? orgVal, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
+        public async Task<IActionResult> GetAll([FromQuery] string? nameVal, [FromQuery] string? orgVal,
+            [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
         {
             var dbCustomerResult = await userManager.GetUsersInRoleAsync("Customer");
             var customersResult = dbCustomerResult.AsQueryable();
@@ -47,8 +51,10 @@ namespace ExportPortal.API.Controllers
             {
                 List<CustomerResponseDTO> allCustomers = new List<CustomerResponseDTO>();
 
-                foreach (var singleCustomer in customersResult)
+                foreach (var item in customersResult)
                 {
+                    var singleCustomer = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == item.Id);
+
                     var customer = new CustomerResponseDTO
                     {
                         Id = singleCustomer.Id,
@@ -60,6 +66,7 @@ namespace ExportPortal.API.Controllers
                         City = singleCustomer.City,
                         Address = singleCustomer.Address,
                         Zipcode = singleCustomer.Zipcode,
+                        IsVerified = singleCustomer.IsVerified
                     };
 
                     allCustomers.Add(customer);
@@ -89,6 +96,7 @@ namespace ExportPortal.API.Controllers
                 City = customerDTO.City,
                 Address = customerDTO.Address,
                 Zipcode = customerDTO.Zipcode,
+                IsVerified = true
             };
 
             var customerResult = await userManager.CreateAsync(customerProfile, "Pass@123");
@@ -112,7 +120,8 @@ namespace ExportPortal.API.Controllers
         [Route("{id:Guid}")]
         public async Task<IActionResult> GetById([FromRoute] string id)
         {
-            var customerResult = await userManager.FindByIdAsync(id);
+            var customerResult = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
+
             if (customerResult != null)
             {
                 var customer = new CustomerResponseDTO
@@ -126,6 +135,7 @@ namespace ExportPortal.API.Controllers
                     City = customerResult.City,
                     Address = customerResult.Address,
                     Zipcode = customerResult.Zipcode,
+                    IsVerified = customerResult.IsVerified
                 };
                 return Ok(customer);
             }
@@ -137,8 +147,7 @@ namespace ExportPortal.API.Controllers
         [Route("{id:Guid}")]
         public async Task<IActionResult> Update([FromRoute] string id, [FromBody] UserUpdateDTO userUpdateDTO)
         {
-
-            var updateResult = await userManager.FindByIdAsync(id);
+            var updateResult = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
 
             if (updateResult != null)
             {
@@ -157,7 +166,6 @@ namespace ExportPortal.API.Controllers
                 updateResult.City = userUpdateDTO.City;
                 updateResult.Address = userUpdateDTO.Address;
                 updateResult.Zipcode = userUpdateDTO.Zipcode;
-
 
                 await userManager.UpdateAsync(updateResult);
 

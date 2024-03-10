@@ -11,6 +11,7 @@ namespace ExportPortal.API.Models.Domain
         public string Address { get; set; }
         public int Zipcode { get; set; }
         public Guid? VendorCategoryId { get; set; }
+        public bool IsVerified { get; set; }
 
 
         // Navigation properties

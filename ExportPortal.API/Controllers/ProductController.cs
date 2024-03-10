@@ -101,65 +101,51 @@ namespace ExportPortal.API.Controllers
         //[Authorize(Roles = "Admin")]
         public async Task<ActionResult<Product>> AddProduct([FromForm] ProductDTO productDto)
         {
-            var allowedExtensions = new string[] { ".jpg", ".jpeg", ".png" };
+            ValidateFileUpload(productDto.File);
 
-            if (!allowedExtensions.Contains(Path.GetExtension(productDto.File.FileName)))
+            if (ModelState.IsValid)
             {
-                return BadRequest("No file or unsupported file type.");
+                string imgPath = await Upload(productDto.File);
+
+                var productDomain = new Product
+                {
+                    Name = productDto.Name,
+                    ScientificName = productDto.ScientificName,
+                    ImgPath = imgPath,
+                    VendorCategoryId = productDto.VendorCategoryId,
+                    VendorId1 = productDto?.VendorId1,
+                    VendorId2 = productDto?.VendorId2,
+                    VendorId3 = productDto?.VendorId3,
+                    HSNCode = productDto.HSNCode,
+                    ToPuneFreight = productDto.ToPuneFreight,
+                    InnerPackageMaterial = productDto.InnerPackageMaterial,
+                    OuterPackageMaterial = productDto.OuterPackageMaterial,
+                    ManualPackage = productDto.ManualPackage,
+                    MachinePackage = productDto.MachinePackage,
+                    LocalTransport = productDto.LocalTransport,
+                    Fumigation = productDto.Fumigation,
+                    TotalRate = productDto.TotalRate,
+                    GrossWeight = productDto.GrossWeight,
+                    PouchType = productDto.PouchType,
+                    BumperisPouches = productDto.BumperisPouches,
+                    BagOrBox = productDto.BagOrBox,
+                    BagOrBoxBumpers = productDto.BagOrBoxBumpers,
+                    Ingredients = productDto.Ingredients,
+                    ManufacturingProcess = productDto.ManufacturingProcess,
+                    DairyDeclarationRequired = productDto.DairyDeclarationRequired,
+                    IsForHumanConsumption = productDto.IsForHumanConsumption,
+                    CertificationId = productDto.CertificationId,
+                };
+
+                await dbContext.Products.AddAsync(productDomain);
+                await dbContext.SaveChangesAsync();
+                return Ok(productDomain);
             }
-
-            if (productDto.File.Length > 10485760)
+            else
             {
-                return BadRequest("File size more than 10MB, please upload a smaller size file");
+                return BadRequest(ModelState);
             }
-
-            var localFilePath = Path.Combine(webHostEnvironment.ContentRootPath, "Images",
-                $"{productDto.File.FileName}{Path.GetExtension(productDto.File.FileName)}");
-
-            // Upload Image to Local Path
-            using var stream = new FileStream(localFilePath, FileMode.Create);
-            await productDto.File.CopyToAsync(stream);
-
-            // https://localhost:1234/images/image.jpg
-
-            var urlFilePath = $"{httpContextAccessor.HttpContext.Request.Scheme}://{httpContextAccessor.HttpContext.Request.Host}{httpContextAccessor.HttpContext.Request.PathBase}/Images/{productDto.File.FileName}{Path.GetExtension(productDto.File.FileName)}";
-
-
-            var productDomain = new Product
-            {
-                Name = productDto.Name,
-                ScientificName = productDto.ScientificName,
-                ImgPath = urlFilePath,
-                VendorCategoryId = productDto.VendorCategoryId,
-                VendorId1 = productDto?.VendorId1,
-                VendorId2 = productDto?.VendorId2,
-                VendorId3 = productDto?.VendorId3,
-                HSNCode = productDto.HSNCode,
-                ToPuneFreight = productDto.ToPuneFreight,
-                InnerPackageMaterial = productDto.InnerPackageMaterial,
-                OuterPackageMaterial = productDto.OuterPackageMaterial,
-                ManualPackage = productDto.ManualPackage,
-                MachinePackage = productDto.MachinePackage,
-                LocalTransport = productDto.LocalTransport,
-                Fumigation = productDto.Fumigation,
-                TotalRate = productDto.TotalRate,
-                GrossWeight = productDto.GrossWeight,
-                PouchType = productDto.PouchType,
-                BumperisPouches = productDto.BumperisPouches,
-                BagOrBox = productDto.BagOrBox,
-                BagOrBoxBumpers = productDto.BagOrBoxBumpers,
-                Ingredients = productDto.Ingredients,
-                ManufacturingProcess = productDto.ManufacturingProcess,
-                DairyDeclarationRequired = productDto.DairyDeclarationRequired,
-                IsForHumanConsumption = productDto.IsForHumanConsumption,
-                CertificationId = productDto.CertificationId,
-            };
-
-            await dbContext.Products.AddAsync(productDomain);
-            await dbContext.SaveChangesAsync();
-            return Ok(productDomain);
         }
-
         [HttpGet]
         [Route("{id:Guid}")]
         public async Task<IActionResult> GetById([FromRoute] Guid id)
@@ -315,6 +301,41 @@ namespace ExportPortal.API.Controllers
             }
 
             return BadRequest("Something went wrong");
+        }
+
+        private async Task<string> Upload(IFormFile document)
+        {
+            var folder = Path.Combine(webHostEnvironment.ContentRootPath, "Files", "ProductsImages");
+            if (!Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
+            var localFilePath = Path.Combine(folder, document.FileName);
+
+            // Upload Image to Local Path
+            using var stream = new FileStream(localFilePath, FileMode.Create);
+            await document.CopyToAsync(stream);
+
+            var urlFilePath = $"{httpContextAccessor.HttpContext.Request.Scheme}://{httpContextAccessor.HttpContext.Request.Host}{httpContextAccessor.HttpContext.Request.PathBase}/Files/RFPDocuments/{document.FileName}";
+
+            var FilePath = urlFilePath;
+
+            return FilePath;
+        }
+
+        private void ValidateFileUpload(IFormFile document)
+        {
+            var allowedExtensions = new string[] { ".jpg", ".jpeg", ".png" };
+
+            if (!allowedExtensions.Contains(Path.GetExtension(document.FileName).ToLower()))
+            {
+                ModelState.AddModelError("file", "Unsupported file extension");
+            }
+
+            if (document.Length > 10485760)
+            {
+                ModelState.AddModelError("file", "File size more than 10MB, please upload a smaller size file.");
+            }
         }
 
     }

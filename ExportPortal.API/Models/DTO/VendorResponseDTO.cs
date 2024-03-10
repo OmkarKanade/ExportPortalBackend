@@ -14,6 +14,7 @@ namespace ExportPortal.API.Models.DTO
         public string City { get; set; }
         public string Address { get; set; }
         public int Zipcode { get; set; }
+        public bool IsVerified { get; set; }
 
         // Navigation properties
         public VendorCategory VendorCategory { get; set; }

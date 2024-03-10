@@ -2,7 +2,6 @@
 using ExportPortal.API.Models.Domain;
 using ExportPortal.API.Models.DTO;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -75,15 +74,26 @@ namespace ExportPortal.API.Controllers
                 return Ok("Product added to Quotation");
             }
 
-            var quotationItem = new QuotationItem
+            var existingItem = quotation.Items.FirstOrDefault(qi => qi.ProductId == quotationDTO.ProductId);
+
+            if (existingItem == null)
             {
-                QuotationId = quotation.Id,
-                ProductId = quotationDTO.ProductId,
-                Quantity = quotationDTO.Quantity
-            };
-            await dbContext.QuotationItems.AddAsync(quotationItem);
-            await dbContext.SaveChangesAsync();
-            return Ok("Product added to Quotation");
+                var quotationItem = new QuotationItem
+                {
+                    QuotationId = quotation.Id,
+                    ProductId = quotationDTO.ProductId,
+                    Quantity = quotationDTO.Quantity
+                };
+                await dbContext.QuotationItems.AddAsync(quotationItem);
+                await dbContext.SaveChangesAsync();
+                return Ok("Product added to Quotation");
+            }
+            else
+            {
+                existingItem.Quantity = quotationDTO.Quantity;
+                await dbContext.SaveChangesAsync();
+                return Ok("Quantity updated in Quotation");
+            }
         }
 
         [HttpGet]
@@ -115,5 +125,6 @@ namespace ExportPortal.API.Controllers
 
             return Ok(quotationResponseDTO);
         }
+
     }
 }
