@@ -126,5 +126,31 @@ namespace ExportPortal.API.Controllers
             return Ok(quotationResponseDTO);
         }
 
+        [HttpPost]
+        [Route("UpdateItem")]
+        public async Task<IActionResult> UpdateQuotationItem([FromBody] QuotationItemUpdateDTO updateDTO)
+        {
+            var quotationItemDomain = await dbContext.QuotationItems.Include(p => p.Product).FirstOrDefaultAsync(x => x.Id == updateDTO.Id);
+
+            if (quotationItemDomain == null)
+            {
+                return NotFound();
+            }
+
+            quotationItemDomain.Quantity = updateDTO.Quantity;
+
+            await dbContext.SaveChangesAsync();
+
+            var updatedItem = new QuotationItemDTO
+            {
+                Id = quotationItemDomain.Id,
+                ProductId = quotationItemDomain.Product.Id,
+                ProductName = quotationItemDomain.Product.Name,
+                Quantity = quotationItemDomain.Quantity
+            };
+
+            return Ok(updatedItem);
+        }
+
     }
 }

@@ -83,7 +83,7 @@ namespace ExportPortal.API.Controllers
 
             await dbContext.SaveChangesAsync();
 
-            return Ok(vendorCategoryDTO);
+            return Ok(vendorCategoryDomain);
         }
 
     }

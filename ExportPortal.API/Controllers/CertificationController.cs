@@ -77,7 +77,7 @@ namespace ExportPortal.API.Controllers
 
             await dbContext.SaveChangesAsync();
 
-            return Ok(certificateDTO);
+            return Ok(certificateDomain);
         }
     }
 }

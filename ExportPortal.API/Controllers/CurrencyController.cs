@@ -80,7 +80,7 @@ namespace ExportPortal.API.Controllers
 
             await dbContext.SaveChangesAsync();
 
-            return Ok(currencyDTO);
+            return Ok(currencyDomain);
         }
     }
 }
