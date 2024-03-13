@@ -10,6 +10,8 @@
 
         public bool Status { get; set; }
 
+
+
         public ICollection <QuotationItem> Items { get; set; }
     }
 }

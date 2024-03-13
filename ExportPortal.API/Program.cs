@@ -13,7 +13,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddDbContext<ExportPortalDbContext>(options =>
-options.UseSqlServer(builder.Configuration.GetConnectionString("ExportPortalConnectionString")));
+    options.UseMySql(builder.Configuration.GetConnectionString("ExportPortalConnectionString"),
+    new MySqlServerVersion(new Version(8, 0, 36))));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
