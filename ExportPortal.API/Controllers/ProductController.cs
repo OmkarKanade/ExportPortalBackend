@@ -4,6 +4,7 @@ using ExportPortal.API.Models.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace ExportPortal.API.Controllers
 {
@@ -93,7 +94,7 @@ namespace ExportPortal.API.Controllers
                 };
                 return Ok(productDTO);
             }
-            return BadRequest();
+            return BadRequest("Something went wrong");
         }
 
 
@@ -191,7 +192,7 @@ namespace ExportPortal.API.Controllers
                 };
                 return Ok(productResponseDto);
             }
-            return BadRequest();
+            return BadRequest("Something went wrong");
         }
 
         [HttpGet]
@@ -303,23 +304,22 @@ namespace ExportPortal.API.Controllers
             return BadRequest("Something went wrong");
         }
 
-        private async Task<string> Upload(IFormFile document)
+        private async Task<string> Upload(IFormFile image)
         {
             var folder = Path.Combine(webHostEnvironment.ContentRootPath, "Files", "ProductsImages");
             if (!Directory.Exists(folder))
             {
                 Directory.CreateDirectory(folder);
             }
-            var localFilePath = Path.Combine(folder, document.FileName);
 
-            // Upload Image to Local Path
+            string uniqueName = Guid.NewGuid().ToString();
+            string fileExt = Path.GetExtension(image.FileName);
+            var localFilePath = Path.Combine(folder, $"{uniqueName}{fileExt}");
+
             using var stream = new FileStream(localFilePath, FileMode.Create);
-            await document.CopyToAsync(stream);
-
-            var urlFilePath = $"{httpContextAccessor.HttpContext.Request.Scheme}://{httpContextAccessor.HttpContext.Request.Host}{httpContextAccessor.HttpContext.Request.PathBase}/Files/RFPDocuments/{document.FileName}";
-
+            await image.CopyToAsync(stream);
+            var urlFilePath = $"{httpContextAccessor.HttpContext.Request.Scheme}://{httpContextAccessor.HttpContext.Request.Host}{httpContextAccessor.HttpContext.Request.PathBase}/Files/ProductsImages/{uniqueName}{fileExt}";
             var FilePath = urlFilePath;
-
             return FilePath;
         }
 

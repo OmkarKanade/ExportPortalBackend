@@ -1,10 +1,10 @@
 ﻿using ExportPortal.API.Data;
+using ExportPortal.API.Migrations;
 using ExportPortal.API.Models.Domain;
 using ExportPortal.API.Models.DTO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Net.NetworkInformation;
 
 namespace ExportPortal.API.Controllers
 {
@@ -20,6 +20,36 @@ namespace ExportPortal.API.Controllers
 
         [HttpGet]
         public async Task<IActionResult> GetAllQuotations()
+        {
+            var quotationDomain = await dbContext.Quotations.Include(u => u.Customer)
+                .Include(q => q.Items).ThenInclude(qi => qi.Product).ToListAsync();
+
+            List<QuotationResponseDTO> allQuotations = new List<QuotationResponseDTO>();
+
+            foreach (var item in quotationDomain)
+            {
+                var quotationResponseDTO = new QuotationResponseDTO
+                {
+                    Id = item.Id,
+                    CustomerId = item.CustomerId,
+                    CustomerName = item.Customer.Name,
+                    Status = item.Status,
+                    Items = item.Items.Select(qi => new QuotationItemDTO
+                    {
+                        Id = qi.Id,
+                        ProductId = qi.Product.Id,
+                        ProductName = qi.Product.Name,
+                        Quantity = qi.Quantity
+                    }).ToList()
+                };
+                allQuotations.Add(quotationResponseDTO);
+            }
+            return Ok(allQuotations);
+        }
+
+        [HttpGet]
+        [Route("Admin")]
+        public async Task<IActionResult> GetAllQuotationsForAdmin()
         {
             var quotationDomain = await dbContext.Quotations.Include(u => u.Customer)
                 .Include(q => q.Items).ThenInclude(qi => qi.Product).Where(x => !x.Status).ToListAsync();
@@ -48,19 +78,22 @@ namespace ExportPortal.API.Controllers
         }
 
         [HttpPost]
+        [Route("AddItem")]
         //[Authorize(Roles = "Admin")]
         public async Task<ActionResult<Quotation>> AddQuotationItem(QuotationDTO quotationDTO)
         {
             var customerId = quotationDTO.CustomerId;
 
-            var activeQuotation = await dbContext.Quotations.FirstOrDefaultAsync(q => q.CustomerId == customerId && q.Status);
+            var activeQuotation = await dbContext.Quotations.Include(i => i.Items).FirstOrDefaultAsync(q => q.CustomerId == customerId && q.Status);
 
             if (activeQuotation == null)
             {
                 var quotationDomain = new Quotation
                 {
                     CustomerId = quotationDTO.CustomerId,
-                    Status = true
+                    Status = true,
+                    CreatedOn = DateTime.Now,
+                    LastModifiedOn = DateTime.Now,
                 };
                 await dbContext.Quotations.AddAsync(quotationDomain);
                 await dbContext.SaveChangesAsync();
@@ -165,40 +198,45 @@ namespace ExportPortal.API.Controllers
         [Route("CustomerActive/{id:Guid}")]
         public async Task<IActionResult> GetByCustomerIdActive([FromRoute] string id)
         {
-            var quotationDomain = await dbContext.Quotations.Include(u => u.Customer)
-                .Include(q => q.Items).ThenInclude(qi => qi.Product).FirstOrDefaultAsync(x => x.CustomerId == id && x.Status);
+            var quotationDomains = await dbContext.Quotations.Include(u => u.Customer)
+                .Include(q => q.Items).ThenInclude(qi => qi.Product).Where(x => x.CustomerId == id && x.Status).ToListAsync();
 
-            if (quotationDomain != null)
+            if (quotationDomains != null)
             {
-                var singleQuotationResponseDTO = new QuotationResponseDTO
+                List<QuotationResponseDTO> quotationResponseDTO = new List<QuotationResponseDTO>();
+                foreach (var quotationDomain in quotationDomains)
                 {
-                    Id = quotationDomain.Id,
-                    CustomerId = quotationDomain.CustomerId,
-                    CustomerName = quotationDomain.Customer.Name,
-                    Status = quotationDomain.Status,
-                    Items = quotationDomain.Items.Select(qi => new QuotationItemDTO
+                    var singleQuotationResponseDTO = new QuotationResponseDTO
                     {
-                        Id = qi.Id,
-                        ProductId = qi.Product.Id,
-                        ProductName = qi.Product.Name,
-                        Quantity = qi.Quantity
-                    }).ToList()
-                };
-
-                return Ok(singleQuotationResponseDTO);
+                        Id = quotationDomain.Id,
+                        CustomerId = quotationDomain.CustomerId,
+                        CustomerName = quotationDomain.Customer.Name,
+                        Status = quotationDomain.Status,
+                        Items = quotationDomain.Items.Select(qi => new QuotationItemDTO
+                        {
+                            Id = qi.Id,
+                            ProductId = qi.Product.Id,
+                            ProductName = qi.Product.Name,
+                            Quantity = qi.Quantity
+                        }).ToList()
+                    };
+                    quotationResponseDTO.Add(singleQuotationResponseDTO);
+                }
+                return Ok(quotationResponseDTO);
             }
             return BadRequest("Something went wrong");
         }
 
         [HttpPut]
         [Route("UpdateItem/{itemId:Guid}")]
-        public async Task<IActionResult> UpdateQuotationItem([FromBody] QuotationItemUpdateDTO updateDTO)
+        public async Task<IActionResult> UpdateQuotationItem([FromRoute] Guid itemId, [FromBody] QuotationItemUpdateDTO updateDTO)
         {
-            var quotationItemDomain = await dbContext.QuotationItems.Include(qi => qi.Quotation).Include(p => p.Product).FirstOrDefaultAsync(x => x.Id == updateDTO.Id);
+            var quotationItemDomain = await dbContext.QuotationItems.Include(qi => qi.Quotation).Include(p => p.Product).FirstOrDefaultAsync(x => x.Id == itemId);
             
             if (quotationItemDomain != null && quotationItemDomain.Quotation.Status)
             {
                 quotationItemDomain.Quantity = updateDTO.Quantity;
+                quotationItemDomain.Quotation.LastModifiedOn = DateTime.Now;
 
                 await dbContext.SaveChangesAsync();
 
@@ -224,10 +262,18 @@ namespace ExportPortal.API.Controllers
 
             if (itemToDelete != null && itemToDelete.Quotation.Status)
             {
+                itemToDelete.Quotation.LastModifiedOn = DateTime.Now;
                 dbContext.QuotationItems.Remove(itemToDelete);
                 await dbContext.SaveChangesAsync();
 
-                return Ok("Quotation item deleted successfully");
+                var deletedItem = new QuotationItemDTO
+                {
+                    Id = itemToDelete.Id,
+                    ProductId = itemToDelete.Product.Id,
+                    ProductName = itemToDelete.Product.Name,
+                    Quantity = itemToDelete.Quantity
+                };
+                return Ok(deletedItem);
             }
             return BadRequest("Something went wrong");
         }
@@ -236,15 +282,32 @@ namespace ExportPortal.API.Controllers
         [Route("SendQuotation/{id:Guid}")]
         public async Task<IActionResult> SetQuotationStatus([FromRoute] Guid id)
         {
-            var quotation = await dbContext.Quotations.FirstOrDefaultAsync(q => q.Id == id);
+            var quotation = await dbContext.Quotations.Include(u => u.Customer)
+                .Include(q => q.Items).ThenInclude(qi => qi.Product).FirstOrDefaultAsync(q => q.Id == id);
 
             if (quotation != null)
             {
                 quotation.Status = false;
+                quotation.LastModifiedOn = DateTime.Now;
 
                 await dbContext.SaveChangesAsync();
 
-                return Ok($"Quotation Sended");
+                var singleQuotationResponseDTO = new QuotationResponseDTO
+                {
+                    Id = quotation.Id,
+                    CustomerId = quotation.CustomerId,
+                    CustomerName = quotation.Customer.Name,
+                    Status = quotation.Status,
+                    Items = quotation.Items.Select(qi => new QuotationItemDTO
+                    {
+                        Id = qi.Id,
+                        ProductId = qi.Product.Id,
+                        ProductName = qi.Product.Name,
+                        Quantity = qi.Quantity
+                    }).ToList()
+                };
+
+                return Ok(singleQuotationResponseDTO);
             }
             return BadRequest("Something went wrong");
         }
@@ -282,7 +345,7 @@ namespace ExportPortal.API.Controllers
 
                 return Ok("Quotation items assigned to vendors successfully");
             }
-            return BadRequest();
+            return BadRequest("Something went wrong");
         }
     }
 }

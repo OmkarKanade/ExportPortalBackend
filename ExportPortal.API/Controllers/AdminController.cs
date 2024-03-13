@@ -108,7 +108,7 @@ namespace ExportPortal.API.Controllers
                 return Ok(admin);
             }
            
-            return BadRequest();
+            return BadRequest("Something went wrong");
         }
 
     }

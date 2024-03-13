@@ -10,7 +10,9 @@
 
         public bool Status { get; set; }
 
+        public DateTime CreatedOn { get; set; }
 
+        public DateTime LastModifiedOn { get; set; }
 
         public ICollection <QuotationItem> Items { get; set; }
     }

@@ -148,7 +148,7 @@ namespace ExportPortal.API.Controllers
                 return Ok(vendor);
             }
            
-            return BadRequest();
+            return BadRequest("Something went wrong");
         }
 
         [HttpPut]
