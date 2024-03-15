@@ -64,7 +64,6 @@ namespace ExportPortal.API.Data
             builder.Entity<Quotation>().HasMany(q => q.Items).WithOne(p => p.Quotation).HasForeignKey(p => p.QuotationId);//.OnDelete(DeleteBehavior.Cascade);
             builder.Entity<QuotationItem>().HasOne(q => q.Quotation).WithMany(p => p.Items).HasForeignKey(q => q.QuotationId);
 
-            builder.Entity<QuotationItemAssignment>().HasOne(u => u.Customer).WithMany().HasForeignKey(u => u.CustomerId);
             builder.Entity<QuotationItemAssignment>().HasOne(u => u.Vendor).WithMany().HasForeignKey(u => u.VendorId);
 
         }

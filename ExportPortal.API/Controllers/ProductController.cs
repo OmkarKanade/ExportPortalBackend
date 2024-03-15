@@ -304,6 +304,31 @@ namespace ExportPortal.API.Controllers
             return BadRequest("Something went wrong");
         }
 
+        [HttpPut]
+        [Route("UpdatePrice/{productId:Guid}")]
+        public async Task<IActionResult> UpdateProductPrice([FromRoute] Guid productId, [FromBody] UpdatePriceRequest request)
+        {
+            var product = await dbContext.Products.FirstOrDefaultAsync(p => p.Id == productId);
+
+            if (product != null)
+            {
+                if (request.VendorId == product.VendorId1)
+                    product.Vendor1Price = request.Price;
+                else if (request.VendorId == product.VendorId2)
+                    product.Vendor2Price = request.Price;
+                else if (request.VendorId == product.VendorId3)
+                    product.Vendor3Price = request.Price;
+                else
+                    return BadRequest("Something went wrong");
+
+                await dbContext.SaveChangesAsync();
+                return Ok($"Price for vendor {request.VendorId} updated successfully for product {productId}.");
+               
+            }
+            return BadRequest("Something went wrong");
+
+        }
+
         private async Task<string> Upload(IFormFile image)
         {
             var folder = Path.Combine(webHostEnvironment.ContentRootPath, "Files", "ProductsImages");

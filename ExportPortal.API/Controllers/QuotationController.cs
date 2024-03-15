@@ -51,23 +51,32 @@ namespace ExportPortal.API.Controllers
         public async Task<IActionResult> GetAllQuotationsForAdmin()
         {
             var quotationDomain = await dbContext.Quotations.Include(u => u.Customer)
-                .Include(q => q.Items).ThenInclude(qi => qi.Product).Where(x => !x.Status).ToListAsync();
+                .Include(q => q.Items).ThenInclude(qi => qi.Product).ThenInclude(u => u.UserProfile1)
+                .Include(q => q.Items).ThenInclude(qi => qi.Product).ThenInclude(u => u.UserProfile2)
+                .Include(q => q.Items).ThenInclude(qi => qi.Product).ThenInclude(u => u.UserProfile3)
+                .Where(x => !x.Status).ToListAsync();
 
-            List<QuotationResponseDTO> allQuotations = new List<QuotationResponseDTO>();
+            List<QuotationResponseAdminDTO> allQuotations = new List<QuotationResponseAdminDTO>();
 
             foreach (var item in quotationDomain)
             {
-                var quotationResponseDTO = new QuotationResponseDTO
+                var quotationResponseDTO = new QuotationResponseAdminDTO
                 {
                     Id = item.Id,
                     CustomerId = item.CustomerId,
                     CustomerName = item.Customer.Name,
                     Status = item.Status,
-                    Items = item.Items.Select(qi => new QuotationItemDTO
+                    Items = item.Items.Select(qi => new QuotationItemAdminDTO
                     {
                         Id = qi.Id,
                         ProductId = qi.Product.Id,
                         ProductName = qi.Product.Name,
+                        Vendor1 = qi.Product.UserProfile1?.Name,
+                        Vendor2 = qi.Product.UserProfile2?.Name,
+                        Vendor3 = qi.Product.UserProfile3?.Name,
+                        Vendor1Price = qi.Product.UserProfile1 != null ? qi.Product.Vendor1Price : null,
+                        Vendor2Price = qi.Product.UserProfile2 != null ? qi.Product.Vendor2Price : null,
+                        Vendor3Price = qi.Product.UserProfile3 != null ? qi.Product.Vendor3Price : null,
                         Quantity = qi.Quantity
                     }).ToList()
                 };
@@ -330,7 +339,7 @@ namespace ExportPortal.API.Controllers
                         {
                             var assignment = new QuotationItemAssignment
                             {
-                                CustomerId = quotation.CustomerId,
+                                QuotationId = quotation.Id,
                                 ItemId = item.Id,
                                 VendorId = vendorId
                             };
@@ -341,7 +350,6 @@ namespace ExportPortal.API.Controllers
                 }
 
                 await dbContext.SaveChangesAsync();
-
                 return Ok("Quotation items assigned to vendors successfully");
             }
             return BadRequest("Something went wrong");

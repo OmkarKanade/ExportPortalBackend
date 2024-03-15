@@ -39,6 +39,10 @@
         public bool IsForHumanConsumption { get; set; }
         public Guid? CertificationId { get; set; }
 
+        public decimal? Vendor1Price { get; set; } = 0;
+        public decimal? Vendor2Price { get; set; } = 0;
+        public decimal? Vendor3Price { get; set; } = 0;
+
 
         // Navigation properties
 
